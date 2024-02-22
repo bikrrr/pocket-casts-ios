@@ -24,6 +24,21 @@ struct NowPlayingContainerView: View {
                 }
             } else {
                 NowPlayingEmptyView()
+
+                if #available(watchOS 10.0, *) {
+                    Button("Test Button", role: .destructive) {
+                        print("Now playing button pushed.")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .focusable(interactions: .activate)
+                } else {
+                    Button("Test Button", role: .destructive) {
+                        print("Now playing button pushed.")
+                    }
+                    .alert(isPresented: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Is Presented@*/.constant(false)/*@END_MENU_TOKEN@*/, content: {
+                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Content@*/Alert(title: Text("Alert"))/*@END_MENU_TOKEN@*/
+                    })
+                }
             }
         }
         .navigationTitle(L10n.nowPlayingShortTitle.prefixSourceUnicode)

@@ -1,7 +1,7 @@
 import Foundation
 
 public class KeychainHelper {
-    private let prefix = "au.com.shiftyjelly.podcasts."
+    private let prefix = "local.podcasts."
 
     private static let shared = KeychainHelper()
 
