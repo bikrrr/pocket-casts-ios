@@ -747,7 +747,7 @@ class PlaybackManager: ServerPlaybackDelegate {
             }
         } else if let episode = episode as? Episode, let podcast = episode.parentPodcast() {
             if FeatureFlag.settingsSync.enabled {
-                podcast.settings.trimSilence = effects.trimSilence
+                podcast.settings.trimSilence = TrimSilence(amount: effects.trimSilence)
                 podcast.settings.playbackSpeed = effects.playbackSpeed
                 podcast.settings.boostVolume = effects.volumeBoost
                 podcast.syncStatus = SyncStatus.notSynced.rawValue
@@ -1905,7 +1905,8 @@ class PlaybackManager: ServerPlaybackDelegate {
     // MARK: - Private helpers
 
     private func checkIfStreamBufferRequired(episode: BaseEpisode, effects: PlaybackEffects) {
-        if effects.trimSilence.isEnabled(), !episode.downloaded(pathFinder: DownloadManager.shared) {
+        let downloadEpisode = effects.trimSilence.isEnabled() || FeatureFlag.cachePlayingEpisode.enabled
+        if downloadEpisode, !episode.downloaded(pathFinder: DownloadManager.shared) {
             // the user is streaming and has turned on remove silence, kick off a download so we can fulfill that request
             DownloadManager.shared.addToQueue(episodeUuid: episode.uuid, fireNotification: false, autoDownloadStatus: .playerDownloadedForStreaming)
         }

@@ -66,12 +66,19 @@ class Settings: NSObject {
 
     // MARK: - Up Next Auto Download
 
-    private static let autoDownloadUpNext = "SJAutoDownloadUpNext"
+    static let autoDownloadUpNext = "SJAutoDownloadUpNext"
     class func downloadUpNextEpisodes() -> Bool {
-        UserDefaults.standard.bool(forKey: Settings.autoDownloadUpNext)
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.autoDownloadUpNext
+        } else {
+            UserDefaults.standard.bool(forKey: Settings.autoDownloadUpNext)
+        }
     }
 
     class func setDownloadUpNextEpisodes(_ download: Bool) {
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.autoDownloadUpNext = download
+        }
         UserDefaults.standard.set(download, forKey: Settings.autoDownloadUpNext)
         trackValueToggled(.settingsAutoDownloadUpNextToggled, enabled: download)
     }
@@ -99,12 +106,19 @@ class Settings: NSObject {
 
     // MARK: - Auto Download Mobile Data
 
-    private static let allowCellularAutoDownloadKey = "SJUserCellularAutoDownload"
+    static let allowCellularAutoDownloadKey = "SJUserCellularAutoDownload"
     class func autoDownloadMobileDataAllowed() -> Bool {
-        UserDefaults.standard.bool(forKey: Settings.allowCellularAutoDownloadKey)
+        if FeatureFlag.settingsSync.enabled {
+            !SettingsStore.appSettings.autoDownloadUnmeteredOnly
+        } else {
+            UserDefaults.standard.bool(forKey: Settings.allowCellularAutoDownloadKey)
+        }
     }
 
     class func setAutoDownloadMobileDataAllowed(_ allow: Bool, userInitiated: Bool = false) {
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.autoDownloadUnmeteredOnly = !allow
+        }
         UserDefaults.standard.set(allow, forKey: Settings.allowCellularAutoDownloadKey)
 
         guard userInitiated else { return }
@@ -489,12 +503,19 @@ class Settings: NSObject {
         UserDefaults.standard.set(value, forKey: userEpisodeSortByKey)
     }
 
-    private static let userEpisodeAutoUploadKey = "UserEpisodeAutoUpload"
+    static let userEpisodeAutoUploadKey = "UserEpisodeAutoUpload"
     class func userFilesAutoUpload() -> Bool {
-        UserDefaults.standard.bool(forKey: userEpisodeAutoUploadKey)
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.cloudAutoUpload
+        } else {
+            UserDefaults.standard.bool(forKey: userEpisodeAutoUploadKey)
+        }
     }
 
     class func setUserEpisodeAutoUpload(_ value: Bool) {
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.cloudAutoUpload = value
+        }
         UserDefaults.standard.set(value, forKey: userEpisodeAutoUploadKey)
         trackValueToggled(.settingsFilesAutoUploadToCloudToggled, enabled: value)
     }
@@ -667,11 +688,18 @@ class Settings: NSObject {
     }
 
     class func setShouldFollowSystemTheme(_ value: Bool) {
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.useSystemTheme = value
+        }
         UserDefaults.standard.set(value, forKey: Constants.UserDefaults.shouldFollowSystemThemeKey)
     }
 
     class func shouldFollowSystemTheme() -> Bool {
-        UserDefaults.standard.bool(forKey: Constants.UserDefaults.shouldFollowSystemThemeKey)
+        if FeatureFlag.settingsSync.enabled {
+            SettingsStore.appSettings.useSystemTheme
+        } else {
+            UserDefaults.standard.bool(forKey: Constants.UserDefaults.shouldFollowSystemThemeKey)
+        }
     }
 
     // MARK: Player Actions
@@ -948,7 +976,18 @@ class Settings: NSObject {
 
     static var loadEmbeddedImages: Bool {
         get {
-            UserDefaults.standard.bool(forKey: Constants.UserDefaults.loadEmbeddedImages)
+            if FeatureFlag.settingsSync.enabled {
+                SettingsStore.appSettings.useEmbeddedArtwork
+            } else {
+                UserDefaults.standard.bool(forKey: Constants.UserDefaults.loadEmbeddedImages)
+            }
+        }
+        set {
+            if FeatureFlag.settingsSync.enabled {
+                SettingsStore.appSettings.useEmbeddedArtwork = newValue
+            }
+            UserDefaults.standard.set(newValue, forKey: Constants.UserDefaults.loadEmbeddedImages)
+            Settings.trackValueToggled(.settingsAppearanceUseEmbeddedArtworkToggled, enabled: newValue)
         }
     }
 
@@ -1030,10 +1069,17 @@ class Settings: NSObject {
 
     static var darkUpNextTheme: Bool {
         get {
-            Constants.UserDefaults.appearance.darkUpNextTheme.value
+            if FeatureFlag.settingsSync.enabled {
+                SettingsStore.appSettings.useDarkUpNextTheme
+            } else {
+                Constants.UserDefaults.appearance.darkUpNextTheme.value
+            }
         }
 
         set {
+            if FeatureFlag.settingsSync.enabled {
+                SettingsStore.appSettings.useDarkUpNextTheme = newValue
+            }
             Constants.UserDefaults.appearance.darkUpNextTheme.save(newValue)
         }
     }
@@ -1225,7 +1271,7 @@ extension HeadphoneControl {
         case .skipForward:
             return .skipForward
         }
-	}
+    }
 }
 
 extension UserDefaults {

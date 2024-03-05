@@ -5,6 +5,7 @@ import SwiftProtobuf
 
 extension Api_ChangeableSettings {
     mutating func update(with settings: AppSettings) {
+        let oldSettings = self
         openLinks.update(settings.$openLinks)
         rowAction.update(settings.$rowAction)
         skipForward.update(settings.$skipForward)
@@ -43,11 +44,25 @@ extension Api_ChangeableSettings {
         filesAfterPlayingDeleteLocal.update(settings.$filesAfterPlayingDeleteLocal)
         filesAfterPlayingDeleteCloud.update(settings.$filesAfterPlayingDeleteCloud)
         playerShelf.update(settings.$playerShelf)
+        useEmbeddedArtwork.update(settings.$useEmbeddedArtwork)
+        theme.update(settings.$theme)
+        useSystemTheme.update(settings.$useSystemTheme)
+        lightThemePreference.update(settings.$lightThemePreference)
+        darkThemePreference.update(settings.$darkThemePreference)
+        useDarkUpNextTheme.update(settings.$useDarkUpNextTheme)
+        autoUpNextLimit.update(settings.$autoUpNextLimit)
+        autoUpNextLimitReached.update(settings.$autoUpNextLimitReached)
+        autoDownloadUpNext.update(settings.$autoDownloadUpNext)
+        autoDownloadUnmeteredOnly.update(settings.$autoDownloadUnmeteredOnly)
+        cloudAutoUpload.update(settings.$cloudAutoUpload)
+        cloudAutoDownload.update(settings.$cloudAutoDownload)
+        cloudDownloadUnmeteredOnly.update(settings.$cloudDownloadUnmeteredOnly)
     }
 }
 
 extension AppSettings {
     mutating func update(with settings: Api_NamedSettingsResponse) {
+        let oldSettings = self
         $openLinks.update(setting: settings.openLinks)
         $rowAction.update(setting: settings.rowAction)
         $skipForward.update(setting: settings.skipForward)
@@ -86,6 +101,20 @@ extension AppSettings {
         $filesAfterPlayingDeleteLocal.update(setting: settings.filesAfterPlayingDeleteLocal)
         $filesAfterPlayingDeleteCloud.update(setting: settings.filesAfterPlayingDeleteCloud)
         $playerShelf.update(setting: settings.playerShelf)
+        $useEmbeddedArtwork.update(setting: settings.useEmbeddedArtwork)
+        $theme.update(setting: settings.theme)
+        $useSystemTheme.update(setting: settings.useSystemTheme)
+        $lightThemePreference.update(setting: settings.lightThemePreference)
+        $darkThemePreference.update(setting: settings.darkThemePreference)
+        $useDarkUpNextTheme.update(setting: settings.useDarkUpNextTheme)
+        $autoUpNextLimit.update(setting: settings.autoUpNextLimit)
+        $autoUpNextLimitReached.update(setting: settings.autoUpNextLimitReached)
+        $autoDownloadUpNext.update(setting: settings.autoDownloadUpNext)
+        $autoDownloadUnmeteredOnly.update(setting: settings.autoDownloadUnmeteredOnly)
+        $cloudAutoUpload.update(setting: settings.cloudAutoUpload)
+        $cloudAutoDownload.update(setting: settings.cloudAutoDownload)
+        $cloudDownloadUnmeteredOnly.update(setting: settings.cloudDownloadUnmeteredOnly)
+        oldSettings.printDiff(from: self)
     }
 }
 
@@ -108,6 +137,7 @@ class SyncSettingsTask: ApiBaseTask {
 
             if shouldUseNewSync {
                 settingsRequest.changedSettings.update(with: appSettings.settings)
+                FileLog.shared.addMessage("Syncing new settings: \(try! settingsRequest.changedSettings.jsonString())")
             } else {
                 if ServerSettings.skipBackNeedsSyncing() {
                     settingsRequest.settings.skipBack.value = Int32(ServerSettings.skipBackTime())
